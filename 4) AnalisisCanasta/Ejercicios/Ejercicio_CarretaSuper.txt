@@ -1,0 +1,18 @@
+library(arules)
+carreta <- read.transactions("C:/Digicel/4) AnalisisCanasta/Ejercicios/carretasuper.csv", sep = ",")
+summary(carreta)
+
+#Primeras 5 Transacciones
+inspect(carreta[1:5])
+
+#examine the frequency of items
+itemFrequency(carreta[, 1:3])
+itemFrequencyPlot(carreta, support = 0.1)
+
+itemFrequencyPlot(carreta, topN = 20)
+
+
+library(arules)
+
+apriori(carreta)
+rules <- apriori(carreta)
