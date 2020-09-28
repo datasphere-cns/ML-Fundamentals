@@ -1,0 +1,65 @@
+install.packages("https://cran.r-project.org/bin/windows/contrib/3.3/RGtk2_2.20.31.zip", repos=NULL)
+install.packages("rattle")
+install.packages("rpart")
+install.packages("rpart.plot")
+library(ggplot2) # Data visualization
+library(rpart)
+library(rpart.plot)
+library(rattle)
+library(tree)
+#http://archive.ics.uci.edu/ml/datasets/Bank+Marketing
+data <- read.csv("C:/Digicel/5) ArbolesDecision/Ejercicios/bank.csv",sep = ";")
+
+idx <- sample(1:nrow(data),8)
+data[idx,]
+sapply(data, class)
+
+#Data Cleaning
+data$age <- as.numeric(data$age)
+data$balance <- as.numeric(data$balance)
+data$day <- as.numeric(data$day)
+data$duration <- as.numeric(data$duration)
+data$campaign <- as.numeric(data$campaign)
+data$pdays <- as.numeric(data$pdays)
+data$previous <- as.numeric(data$previous)
+
+summary(data)
+
+#Creation of testing and training dataset
+size <- nrow(data) * 0.8
+na.omit(data)
+data_bank <- sample(1:nrow(data), size = size)
+data_testing <- data[-data_bank,]	# Testing Data
+data_training <- data[data_bank,]		# Training Data
+summary(data_training)
+
+#Plot decision tree
+data_training.rpart <- rpart(y ~ ., data = data_training)
+fancyRpartPlot(data_training.rpart)
+predictions <- predict(data_training.rpart, data_testing, type = "class", probability = TRUE)
+
+data_testing$y_pred<-predictions	
+
+MC         <- table(data_testing$y,data_testing$y_pred)
+
+
+data_testing$y_pred_numb <- 0
+data_testing$y_pred_numb[data_testing$y_pred=="yes"]<-1
+
+data_testing$y_numb <- 0
+data_testing$y_numb[data_testing$y=="yes"]<-1
+
+
+
+library("pROC")
+
+roc_obj <- roc(data_testing$y_numb, data_testing$y_pred_numb)
+
+plot(roc_obj,col = "blue")
+auc(roc_obj)
+
+printcp(data_training.rpart)
+plotcp(data_training.rpart)
+
+write.table(predictions,"C:/Digicel/5) ArbolesDecision/Ejercicios/predictions.csv")
+write.table(data_training$y,"C:/Digicel/5) ArbolesDecision/Ejercicios/data_training_bank.csv")
